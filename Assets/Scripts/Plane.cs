@@ -113,6 +113,7 @@ public class Plane : MonoBehaviour {
 
     new PlaneAnimation animation;
 
+    bool crashed;
     float throttleInput;
     Vector3 controlInput;
 
@@ -547,10 +548,14 @@ public class Plane : MonoBehaviour {
             UpdateLift();
             UpdateSteering(dt);
         } else {
-            //align with velocity
-            Vector3 up = Rigidbody.rotation * Vector3.up;
-            Vector3 forward = Rigidbody.velocity.normalized;
-            Rigidbody.rotation = Quaternion.LookRotation(forward, up);
+            Vector3 vel = Rigidbody.velocity;
+
+            if (!crashed && vel.sqrMagnitude > 1) {
+                //align with velocity
+                Vector3 up = Rigidbody.rotation * Vector3.up;
+                Vector3 forward = vel.normalized;
+                Rigidbody.rotation = Quaternion.LookRotation(forward, up);
+            }
         }
 
         UpdateDrag();
@@ -573,6 +578,7 @@ public class Plane : MonoBehaviour {
 
             Health = 0;
 
+            crashed = true;
             Rigidbody.isKinematic = true;
             Rigidbody.position = contact.point;
             Rigidbody.rotation = Quaternion.Euler(0, Rigidbody.rotation.eulerAngles.y, 0);
