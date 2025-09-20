@@ -8,3 +8,6 @@ Assets/Terrain.asset filter=lfs diff=lfs merge=lfs -text
 *.jpg filter=lfs diff=lfs merge=lfs -text
 *.fbx filter=lfs diff=lfs merge=lfs -text
 *.png filter=lfs diff=lfs merge=lfs -text
+"Assets/Terrain/zion.raw" filter=lfs diff=lfs merge=lfs -text
+"Assets/Terrain/Zion.asset" filter=lfs diff=lfs merge=lfs -text
+"Assets/Terrain/Terrain.asset" filter=lfs diff=lfs merge=lfs -text
