@@ -43,6 +43,14 @@ public static class Utilities {
         return (Mathf.Tan(angle * Mathf.Deg2Rad) / Mathf.Tan(fov / 2 * Mathf.Deg2Rad)) * pixelHeight / 2;
     }
 
+	public static float MapAngleTo180(float angle) {
+		if (angle > 180) {
+			angle -= 360;
+		}
+
+		return angle;
+	}
+
 	/*
      * The MIT License (MIT)
      * 

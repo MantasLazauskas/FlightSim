@@ -2183,6 +2183,11 @@ MonoBehaviour:
   deathEffect: {fileID: 2026342940325216661}
   flapsDeployed: 1
   initialSpeed: 0
+  radarAltimeterMaxDistance: 1000
+  radarAltMask:
+    serializedVersion: 2
+    m_Bits: 1
+  radarAltGroundedThreshold: 2.5
   hardpoints:
   - {fileID: 3588451848796086104}
   - {fileID: 8566313077898161204}

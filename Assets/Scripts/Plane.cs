@@ -81,6 +81,12 @@ public class Plane : MonoBehaviour {
     bool flapsDeployed;
     [SerializeField]
     float initialSpeed;
+    [SerializeField]
+    float radarAltimeterMaxDistance;
+    [SerializeField]
+    LayerMask radarAltMask;
+    [SerializeField]
+    float radarAltGroundedThreshold;
 
     [Header("Weapons")]
     [SerializeField]
@@ -116,6 +122,7 @@ public class Plane : MonoBehaviour {
     bool crashed;
     float throttleInput;
     Vector3 controlInput;
+    float radarAlt;
 
     Vector3 lastVelocity;
     PhysicMaterial landingGearDefaultMaterial;
@@ -163,9 +170,16 @@ public class Plane : MonoBehaviour {
     public float Throttle { get; private set; }
     public Vector3 EffectiveInput { get; private set; }
     public Vector3 Velocity { get; private set; }
+    public Vector3 GForce { get; private set; }
     public Vector3 LocalVelocity { get; private set; }
     public Vector3 LocalGForce { get; private set; }
     public Vector3 LocalAngularVelocity { get; private set; }
+
+    /// <summary>
+    /// Pitch, yaw, and roll. Stored in X, Y, and Z respectively
+    /// </summary>
+    public Vector3 PitchYawRoll { get; private set; }
+
     public float AngleOfAttack { get; private set; }
     public float AngleOfAttackYaw { get; private set; }
     public bool AirbrakeDeployed { get; private set; }
@@ -180,6 +194,18 @@ public class Plane : MonoBehaviour {
             foreach (var lg in landingGear) {
                 lg.enabled = value;
             }
+        }
+    }
+
+    public float RadarAltimeter {
+        get {
+            return radarAlt;
+        }
+    }
+
+    public bool Grounded {
+        get {
+            return flapsDeployed && radarAlt < radarAltGroundedThreshold;
         }
     }
 
@@ -288,9 +314,19 @@ public class Plane : MonoBehaviour {
         AngleOfAttackYaw = Mathf.Atan2(LocalVelocity.x, LocalVelocity.z);
     }
 
+    void CalculatePitchYawRoll() {
+        Vector3 euler = Rigidbody.rotation.eulerAngles;
+        euler.x = Utilities.MapAngleTo180(euler.x);
+        euler.y = Utilities.MapAngleTo180(euler.y);
+        euler.z = Utilities.MapAngleTo180(euler.z);
+
+        PitchYawRoll = euler;
+    }
+
     void CalculateGForce(float dt) {
         var invRotation = Quaternion.Inverse(Rigidbody.rotation);
         var acceleration = (Velocity - lastVelocity) / dt;
+        GForce = acceleration;
         LocalGForce = invRotation * acceleration;
         lastVelocity = Velocity;
     }
@@ -302,6 +338,7 @@ public class Plane : MonoBehaviour {
         LocalAngularVelocity = invRotation * Rigidbody.angularVelocity;  //transform into local space
 
         CalculateAngleOfAttack();
+        CalculatePitchYawRoll();
     }
 
     void UpdateThrust() {
@@ -531,6 +568,20 @@ public class Plane : MonoBehaviour {
         }
     }
 
+    void UpdateRadarAltimeter() {
+        Vector3 pos = Rigidbody.position;
+        Vector3 dir = Vector3.down;
+
+        Ray ray = new Ray(pos, dir);
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, radarAltimeterMaxDistance, radarAltMask)) {
+            radarAlt = hit.distance;
+        } else {
+            radarAlt = float.PositiveInfinity;
+        }
+    }
+
     void FixedUpdate() {
         float dt = Time.fixedDeltaTime;
 
@@ -566,6 +617,8 @@ public class Plane : MonoBehaviour {
 
         //update weapon state
         UpdateWeapons(dt);
+
+        UpdateRadarAltimeter();
     }
 
     void OnCollisionEnter(Collision collision) {

@@ -83,9 +83,6 @@ public class PlaneHUD : MonoBehaviour {
 
     float lastUpdateTime;
 
-    const float metersToKnots = 1.94384f;
-    const float metersToFeet = 3.28084f;
-
     void Start() {
         hudCenterGO = hudCenter.gameObject;
         velocityMarkerGO = velocityMarker.gameObject;
@@ -162,7 +159,7 @@ public class PlaneHUD : MonoBehaviour {
     }
 
     void UpdateAirspeed() {
-        var speed = plane.LocalVelocity.z * metersToKnots;
+        var speed = plane.LocalVelocity.z * Units.metersToKnots;
         airspeed.text = string.Format("{0:0}", speed);
     }
 
@@ -176,7 +173,7 @@ public class PlaneHUD : MonoBehaviour {
     }
 
     void UpdateAltitude() {
-        var altitude = plane.Rigidbody.position.y * metersToFeet;
+        var altitude = plane.Rigidbody.position.y * Units.metersToFeet;
         this.altitude.text = string.Format("{0:0}", altitude);
     }
 

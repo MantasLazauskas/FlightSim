@@ -14,6 +14,7 @@ public class PlayerController : MonoBehaviour {
     Vector3 controlInput;
     PlaneCamera planeCamera;
     AIController aiController;
+    AutopilotController autopilotController;
 
     void Start() {
         planeCamera = GetComponent<PlaneCamera>();
@@ -23,6 +24,7 @@ public class PlayerController : MonoBehaviour {
     void SetPlane(Plane plane) {
         this.plane = plane;
         aiController = plane.GetComponent<AIController>();
+        autopilotController = plane.GetComponent<AutopilotController>();
 
         if (planeHUD != null) {
             planeHUD.SetPlane(plane);
@@ -31,6 +33,19 @@ public class PlayerController : MonoBehaviour {
 
         planeCamera.SetPlane(plane);
     }
+
+    bool ShouldOverrideControl() {
+        if (aiController != null && aiController.enabled) {
+            return true;
+        }
+
+        if (autopilotController != null && autopilotController.enabled) {
+            return true;
+        }
+
+        return false;
+    }
+
     public void OnToggleHelp(InputAction.CallbackContext context) {
         if (plane == null) return;
 
@@ -41,7 +56,7 @@ public class PlayerController : MonoBehaviour {
 
     public void SetThrottleInput(InputAction.CallbackContext context) {
         if (plane == null) return;
-        if (aiController.enabled) return;
+        if (ShouldOverrideControl()) return;
 
         plane.SetThrottleInput(context.ReadValue<float>());
     }
@@ -99,11 +114,15 @@ public class PlayerController : MonoBehaviour {
         if (aiController != null) {
             aiController.enabled = !aiController.enabled;
         }
+
+        if (autopilotController != null) {
+            autopilotController.enabled = !autopilotController.enabled;
+        }
     }
 
     void Update() {
         if (plane == null) return;
-        if (aiController.enabled) return;
+        if (ShouldOverrideControl()) return;
 
         plane.SetControlInput(controlInput);
     }
