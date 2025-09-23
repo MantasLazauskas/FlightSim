@@ -669,6 +669,7 @@ MonoBehaviour:
   plane: {fileID: 716492603949598967}
   autopilot: {fileID: 716492603949598973}
   infoText: {fileID: 576216095}
+  updateInterval: 0
 --- !u!1 &327152944
 GameObject:
   m_ObjectHideFlags: 0
@@ -3834,16 +3835,16 @@ MonoBehaviour:
   plane: {fileID: 716492603949598967}
   state: 0
   pitchHoldController:
-    proportionalGain: 0.01
-    integralGain: 0
-    derivativeGain: 0
+    proportionalGain: 0.25
+    integralGain: 0.1
+    derivativeGain: 0.05
     outputMin: -1
     outputMax: 1
-    integralSaturation: 0
+    integralSaturation: 1
   climbRateController:
-    proportionalGain: 0.02
+    proportionalGain: 0.05
     integralGain: 0.001
-    derivativeGain: 0.001
+    derivativeGain: 0.005
     outputMin: -15
     outputMax: 15
     integralSaturation: 10000
@@ -3851,9 +3852,18 @@ MonoBehaviour:
     state: 0
     rotationSpeed: 100
     rotationAngle: 10
-    finishTakeoffClimbRate: 5000
-    finishTakeoffTargetAGL: 1500
+    finishTakeoffClimbRate: 6000
+    finishTakeoffTargetAGL: 2000
     finishTakeoffTargetSpeed: 175
+    runwayAltitude: 0
+  navigateMode:
+    pitchControlMode: 0
+    altitudeControlMode: 0
+    targetPitch: 0
+    targetSpeed: 0
+    targetAltitude: 0
+    targetClimbRate: 0
+    targetHeading: 0
 --- !u!1001 &4819415882130369158
 PrefabInstance:
   m_ObjectHideFlags: 0

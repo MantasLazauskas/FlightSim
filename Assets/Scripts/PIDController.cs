@@ -15,6 +15,10 @@ public class PIDController {
 
     float integrationStored;
 
+    public void Reset() {
+        integrationStored = 0;
+    }
+
     public float Update(float dt, float currentValue, float targetValue, float velocity) {
         if (dt <= 0) throw new ArgumentOutOfRangeException(nameof(dt));
 
@@ -27,7 +31,7 @@ public class PIDController {
         integrationStored = Mathf.Clamp(integrationStored + (error * dt), -integralSaturation, integralSaturation);
         float I = integralGain * integrationStored;
 
-        float D = derivativeGain * velocity;
+        float D = derivativeGain * -velocity;
 
         float result = P + I + D;
 

@@ -11,6 +11,8 @@ public class AutopilotHUD : MonoBehaviour {
     AutopilotController autopilot;
     [SerializeField]
     Text infoText;
+    [SerializeField]
+    float updateInterval;
 
     StringBuilder builder;
 
@@ -24,6 +26,9 @@ public class AutopilotHUD : MonoBehaviour {
 
         float pitch = plane.PitchYawRoll.x;
         builder.AppendLine(string.Format("Pitch: {0:N2}", pitch));
+
+        float pitchRate = -plane.LocalAngularVelocity.x * Mathf.Rad2Deg;
+        builder.AppendLine(string.Format("Pitch rate: {0:N2}", pitchRate));
 
         float agl = plane.RadarAltimeter * Units.metersToFeet;
         builder.AppendLine(string.Format("AGL: {0:N0}", agl));

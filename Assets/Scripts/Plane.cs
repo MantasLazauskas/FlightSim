@@ -316,7 +316,7 @@ public class Plane : MonoBehaviour {
 
     void CalculatePitchYawRoll() {
         Vector3 euler = Rigidbody.rotation.eulerAngles;
-        euler.x = Utilities.MapAngleTo180(euler.x);
+        euler.x = -Utilities.MapAngleTo180(euler.x);
         euler.y = Utilities.MapAngleTo180(euler.y);
         euler.z = Utilities.MapAngleTo180(euler.z);
 
