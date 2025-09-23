@@ -36,6 +36,8 @@ public class AutopilotHUD : MonoBehaviour {
         float climbRate = plane.Rigidbody.velocity.y * Units.metersToFeet * 60;
         builder.AppendLine(string.Format("Climb rate: {0}", (int)Mathf.Round(climbRate)));
 
+        autopilot.WriteDebugString(builder);
+
         infoText.text = builder.ToString();
     }
 

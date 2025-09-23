@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 public class AutopilotController : MonoBehaviour {
@@ -20,9 +21,16 @@ public class AutopilotController : MonoBehaviour {
     [SerializeField]
     PIDController climbRateController;
     [SerializeField]
+    PIDController altitudeHoldController;
+    [SerializeField]
+    PIDController speedHoldController;
+    [SerializeField]
     TakeoffModeState takeoffMode;
     [SerializeField]
     NavigateModeState navigateMode;
+
+    float internalTargetClimbRate;
+    float internalTargetPitch;
 
     [Serializable]
     public class TakeoffModeState {
@@ -35,14 +43,14 @@ public class AutopilotController : MonoBehaviour {
 
         public TakeoffState state;
         [Tooltip("Knots")]
-        public float rotationSpeed;
+        public float rotationSpeedKts;
         public float rotationAngle;
         [Tooltip("Feet/min")]
-        public float finishTakeoffClimbRate;
+        public float finishTakeoffClimbRateFtPerMin;
         [Tooltip("Feet Above Ground Level (runway)")]
-        public float finishTakeoffTargetAGL;
+        public float finishTakeoffTargetFtAGL;
         [Tooltip("Knots")]
-        public float finishTakeoffTargetSpeed;
+        public float finishTakeoffTargetSpeedKts;
 
         public float runwayAltitude;
     }
@@ -64,11 +72,11 @@ public class AutopilotController : MonoBehaviour {
         public AltitudeControlMode altitudeControlMode;
         public float targetPitch;
         [Tooltip("Knots")]
-        public float targetSpeed;
+        public float targetSpeedKts;
         [Tooltip("Feet")]
-        public float targetAltitude;
+        public float targetAltitudeFt;
         [Tooltip("Feet/min")]
-        public float targetClimbRate;
+        public float targetClimbRateFtPerMin;
         public float targetHeading;
     }
 
@@ -99,8 +107,32 @@ public class AutopilotController : MonoBehaviour {
         }
     }
 
+    public void WriteDebugString(StringBuilder builder) {
+        if (state == AutopilotState.Navigate) {
+            if (navigateMode.pitchControlMode == NavigateModeState.PitchControlMode.AltitudeMode) {
+                builder.AppendLine(string.Format("Internal climb rate: {0:N0}", internalTargetClimbRate));
+                builder.AppendLine(string.Format("Internal pitch: {0:N1}", internalTargetPitch));
+            }
+        }
+    }
+
     float GetPitchRate(Plane plane) {
         return -plane.LocalAngularVelocity.x * Mathf.Rad2Deg;
+    }
+
+    float GetPitchInputForClimbRateHold(float dt, float targetClimbRate) {
+        // convert m/s to ft/min
+        var verticalSpeedFt = plane.Rigidbody.velocity.y * Units.metersToFeet * 60;
+        var verticalAccelFt = plane.GForce.y * Units.metersToFeet * 60;
+        var pitch = plane.PitchYawRoll.x;
+        var pitchRate = GetPitchRate(plane);
+
+        var pitchTarget = climbRateController.Update(dt, verticalSpeedFt, targetClimbRate, verticalAccelFt);
+        var pitchInput = pitchHoldController.Update(dt, pitch, pitchTarget, pitchRate);
+
+        internalTargetPitch = pitchTarget;
+
+        return pitchInput;
     }
 
     public void EnterTakeoffMode() {
@@ -122,9 +154,9 @@ public class AutopilotController : MonoBehaviour {
         SetPitchControlMode(NavigateModeState.PitchControlMode.FlightPathMode);
         SetAltitudeControlMode(NavigateModeState.AltitudeControlMode.AltitudeHold);
 
-        navigateMode.targetAltitude = plane.Rigidbody.position.y * Units.metersToFeet;
+        navigateMode.targetAltitudeFt = plane.Rigidbody.position.y * Units.metersToFeet;
         navigateMode.targetHeading = plane.PitchYawRoll.y;
-        navigateMode.targetSpeed = plane.LocalVelocity.z * Units.metersToKnots;
+        navigateMode.targetSpeedKts = plane.LocalVelocity.z * Units.metersToKnots;
     }
 
     public void SetPitchControlMode(NavigateModeState.PitchControlMode mode) {
@@ -144,16 +176,15 @@ public class AutopilotController : MonoBehaviour {
     }
 
     void HandleNavigate(float dt) {
+        HandleNavigateSpeedControl(dt);
         HandleNavigatePitchControl(dt);
     }
 
     void HandleNavigatePitchControl(float dt) {
         switch (navigateMode.pitchControlMode) {
             case NavigateModeState.PitchControlMode.PitchMode:
-                HandleNavigatePitchMode(dt);
-                break;
             case NavigateModeState.PitchControlMode.FlightPathMode:
-                HandleNavigateFlightPathMode(dt);
+                HandleNavigateFlightPathMode(dt, navigateMode.pitchControlMode);
                 break;
             case NavigateModeState.PitchControlMode.AltitudeMode:
                 HandleNavigateAltitudeMode(dt);
@@ -161,24 +192,47 @@ public class AutopilotController : MonoBehaviour {
         }
     }
 
-    void HandleNavigatePitchMode(float dt) {
-
-    }
-
-    void HandleNavigateFlightPathMode(float dt) {
-        var velocityDir = plane.Rigidbody.velocity.normalized;
-        var vertical = Vector3.up;
-        var flightPathAngle = 90 - Vector3.Angle(vertical, velocityDir);
+    void HandleNavigateFlightPathMode(float dt, NavigateModeState.PitchControlMode mode) {
+        var currentPitch = plane.PitchYawRoll.x;
         var pitchRate = GetPitchRate(plane);
 
-        var pitchInput = pitchHoldController.Update(dt, flightPathAngle, navigateMode.targetPitch, pitchRate);
+        if (mode == NavigateModeState.PitchControlMode.FlightPathMode) {
+            var velocityDir = plane.Rigidbody.velocity.normalized;
+            var vertical = Vector3.up;
+            var flightPathAngle = 90 - Vector3.Angle(vertical, velocityDir);
+            currentPitch = flightPathAngle;
+        }
+
+        var pitchInput = pitchHoldController.Update(dt, currentPitch, navigateMode.targetPitch, pitchRate);
 
         var steering = new Vector3(-pitchInput, 0, 0);
         plane.SetControlInput(steering);
     }
 
     void HandleNavigateAltitudeMode(float dt) {
+        var climbRate = navigateMode.targetClimbRateFtPerMin;
 
+        if (navigateMode.altitudeControlMode == NavigateModeState.AltitudeControlMode.AltitudeHold) {
+            // convert m to ft, m/s to ft/min
+            var altitudeFt = plane.Rigidbody.position.y * Units.metersToFeet;
+            var verticalSpeedFt = plane.Rigidbody.velocity.y * Units.metersToFeet * 60;
+
+            climbRate = altitudeHoldController.Update(dt, altitudeFt, navigateMode.targetAltitudeFt, verticalSpeedFt);
+            internalTargetClimbRate = climbRate;
+        }
+
+        var pitchInput = GetPitchInputForClimbRateHold(dt, climbRate);
+
+        var steering = new Vector3(-pitchInput, 0, 0);
+        plane.SetControlInput(steering);
+    }
+
+    void HandleNavigateSpeedControl(float dt) {
+        var speed = plane.LocalVelocity.z * Units.metersToKnots;
+        var accel = plane.LocalGForce.z * Units.metersToKnots;
+
+        var throttleInput = speedHoldController.Update(dt, speed, navigateMode.targetSpeedKts, accel);
+        plane.SetThrottleInput(throttleInput);
     }
 
     void HandleTakeoff(float dt) {
@@ -205,7 +259,7 @@ public class AutopilotController : MonoBehaviour {
     void HandleStartTakeoff(float dt) {
         plane.SetThrottleInput(1);
 
-        var speedTarget = takeoffMode.rotationSpeed / Units.metersToKnots;
+        var speedTarget = takeoffMode.rotationSpeedKts / Units.metersToKnots;
 
         if (plane.LocalVelocity.z > speedTarget) {
             takeoffMode.state = TakeoffModeState.TakeoffState.Rotate;
@@ -227,23 +281,16 @@ public class AutopilotController : MonoBehaviour {
     }
 
     void HandleFinishTakeoff(float dt) {
-        // convert m/s to ft/min
-        var verticalSpeedFt = plane.Rigidbody.velocity.y * Units.metersToFeet * 60;
-        var verticalAccelFt = plane.GForce.y * Units.metersToFeet * 60;
-        var pitch = plane.PitchYawRoll.x;
-        var pitchRate = GetPitchRate(plane);
-
-        var pitchTarget = climbRateController.Update(dt, verticalSpeedFt, takeoffMode.finishTakeoffClimbRate, verticalAccelFt);
-        var pitchInput = pitchHoldController.Update(dt, pitch, pitchTarget, pitchRate);
+        var pitchInput = GetPitchInputForClimbRateHold(dt, takeoffMode.finishTakeoffClimbRateFtPerMin);
 
         var steering = new Vector3(-pitchInput, 0, 0);
         plane.SetControlInput(steering);
 
         var alt = plane.Rigidbody.position.y * Units.metersToFeet;
-        var targetAlt = takeoffMode.finishTakeoffTargetAGL + takeoffMode.runwayAltitude;
+        var targetAlt = takeoffMode.finishTakeoffTargetFtAGL + takeoffMode.runwayAltitude;
         var speed = plane.LocalVelocity.z * Units.metersToKnots;
 
-        if (alt >= targetAlt && speed >= takeoffMode.finishTakeoffTargetSpeed) {
+        if (alt >= targetAlt && speed >= takeoffMode.finishTakeoffTargetSpeedKts) {
             takeoffMode.state = TakeoffModeState.TakeoffState.Idle;
             EnterNavigateMode();
         }
