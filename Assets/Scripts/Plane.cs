@@ -173,6 +173,10 @@ public class Plane : MonoBehaviour {
     public Vector3 GForce { get; private set; }
     public Vector3 LocalVelocity { get; private set; }
     public Vector3 LocalGForce { get; private set; }
+
+    /// <summary>
+    /// Local Angular Velocity in radians/second
+    /// </summary>
     public Vector3 LocalAngularVelocity { get; private set; }
 
     /// <summary>
@@ -318,7 +322,7 @@ public class Plane : MonoBehaviour {
         Vector3 euler = Rigidbody.rotation.eulerAngles;
         euler.x = -Utilities.MapAngleTo180(euler.x);
         euler.y = Utilities.MapAngleTo180(euler.y);
-        euler.z = Utilities.MapAngleTo180(euler.z);
+        euler.z = -Utilities.MapAngleTo180(euler.z);
 
         PitchYawRoll = euler;
     }

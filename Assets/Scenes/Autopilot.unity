@@ -3834,10 +3834,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   plane: {fileID: 716492603949598967}
   state: 0
+  deadzone: 0.01
   pitchHoldController:
     proportionalGain: 0.2
     integralGain: 0.05
-    derivativeGain: 0.05
+    derivativeGain: 0
     outputMin: -1
     outputMax: 1
     integralSaturation: 1
@@ -3862,6 +3863,27 @@ MonoBehaviour:
     outputMin: -1
     outputMax: 1
     integralSaturation: 0
+  turnBankController:
+    proportionalGain: 2
+    integralGain: 0
+    derivativeGain: 0.1
+    outputMin: -60
+    outputMax: 60
+    integralSaturation: 0
+  rollController:
+    proportionalGain: 0.05
+    integralGain: 0
+    derivativeGain: 0.001
+    outputMin: -1
+    outputMax: 1
+    integralSaturation: 0
+  yawController:
+    proportionalGain: 0.1
+    integralGain: 0.1
+    derivativeGain: 0
+    outputMin: -1
+    outputMax: 1
+    integralSaturation: 1
   takeoffMode:
     state: 0
     rotationSpeedKts: 100
