@@ -3841,19 +3841,19 @@ MonoBehaviour:
     outputMax: 1
     integralSaturation: 0
   climbRateController:
-    proportionalGain: 0.01
-    integralGain: 0
-    derivativeGain: 0
+    proportionalGain: 0.02
+    integralGain: 0.001
+    derivativeGain: 0.001
     outputMin: -15
     outputMax: 15
-    integralSaturation: 0
+    integralSaturation: 10000
   takeoffMode:
     state: 0
     rotationSpeed: 100
     rotationAngle: 10
-    finishTakeoffClimbRate: 500
+    finishTakeoffClimbRate: 5000
     finishTakeoffTargetAGL: 1500
-    finishTakeoffTargetSpeed: 150
+    finishTakeoffTargetSpeed: 175
 --- !u!1001 &4819415882130369158
 PrefabInstance:
   m_ObjectHideFlags: 0

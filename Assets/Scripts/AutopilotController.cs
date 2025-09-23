@@ -110,9 +110,9 @@ public class AutopilotController : MonoBehaviour {
         var pitch = plane.PitchYawRoll.x;
         var pitchRate = plane.LocalAngularVelocity.x * Mathf.Rad2Deg;
 
-        var pitchInput = pitchHoldController.Update(dt, pitch, takeoffMode.rotationAngle, pitchRate);
+        var pitchInput = pitchHoldController.Update(dt, pitch, -takeoffMode.rotationAngle, pitchRate);
 
-        var steering = new Vector3(-pitchInput, 0, 0);
+        var steering = new Vector3(pitchInput, 0, 0);
         plane.SetControlInput(steering);
 
         if (!plane.Grounded) {
@@ -128,12 +128,12 @@ public class AutopilotController : MonoBehaviour {
         var pitchRate = plane.LocalAngularVelocity.x * Mathf.Rad2Deg;
 
         var pitchTarget = climbRateController.Update(dt, verticalSpeedFt, takeoffMode.finishTakeoffClimbRate, verticalAccelFt);
-        var pitchInput = pitchHoldController.Update(dt, pitch, pitchTarget, pitchRate);
+        var pitchInput = pitchHoldController.Update(dt, pitch, -pitchTarget, pitchRate);
 
-        var steering = new Vector3(-pitchInput, 0, 0);
+        var steering = new Vector3(pitchInput, 0, 0);
         plane.SetControlInput(steering);
 
-        var radarAlt = plane.RadarAltimeter;
+        var radarAlt = plane.RadarAltimeter * Units.metersToFeet;
         var speed = plane.LocalVelocity.z * Units.metersToKnots;
 
         if (radarAlt >= takeoffMode.finishTakeoffTargetAGL && speed >= takeoffMode.finishTakeoffTargetSpeed) {
