@@ -10,6 +10,11 @@ public class Runway : MonoBehaviour {
     public Vector3 End1 { get; private set; }
     public Vector3 End2 { get; private set; }
 
+    public struct TouchdownData {
+        public Vector3 position;
+        public Vector3 direction;
+    }
+
     void Awake() {
         var transform = GetComponent<Transform>();
         Direction = transform.forward;
@@ -19,14 +24,14 @@ public class Runway : MonoBehaviour {
         End2 = transform.position - Direction * halfLength;
     }
 
-    public Vector3 GetClosestEnd(Vector3 position) {
+    public TouchdownData GetClosestTouchdown(Vector3 position) {
         var dist1 = (End1 - position).sqrMagnitude;
         var dist2 = (End2 - position).sqrMagnitude;
 
         if (dist1 < dist2) {
-            return End1;
+            return new TouchdownData { position = End1, direction = -Direction };
         } else {
-            return End2;
+            return new TouchdownData { position = End2, direction = Direction };
         }
     }
 }

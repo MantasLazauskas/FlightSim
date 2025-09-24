@@ -667,7 +667,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   plane: {fileID: 716492603949598967}
-  autopilot: {fileID: 0}
+  autopilot: {fileID: 716492603949598973}
   infoText: {fileID: 576216095}
   updateInterval: 0
 --- !u!1 &327152944
@@ -3978,6 +3978,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1030071069971577036, guid: 868b13a7be7adb148b89b9bcf56bb6a6,
+        type: 3}
+      propertyPath: initialSpeed
+      value: 150
+      objectReference: {fileID: 0}
     - target: {fileID: 5515725321500408573, guid: 868b13a7be7adb148b89b9bcf56bb6a6,
         type: 3}
       propertyPath: m_RootOrder
@@ -3986,17 +3991,17 @@ PrefabInstance:
     - target: {fileID: 5515725321500408573, guid: 868b13a7be7adb148b89b9bcf56bb6a6,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -7860.6143
+      value: -9515
       objectReference: {fileID: 0}
     - target: {fileID: 5515725321500408573, guid: 868b13a7be7adb148b89b9bcf56bb6a6,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 235.1
+      value: 648
       objectReference: {fileID: 0}
     - target: {fileID: 5515725321500408573, guid: 868b13a7be7adb148b89b9bcf56bb6a6,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -7310.6895
+      value: -11302
       objectReference: {fileID: 0}
     - target: {fileID: 5515725321500408573, guid: 868b13a7be7adb148b89b9bcf56bb6a6,
         type: 3}
@@ -4028,6 +4033,11 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 6439548017835457048, guid: 868b13a7be7adb148b89b9bcf56bb6a6,
+        type: 3}
+      propertyPath: landingMode.runways.Array.data[0]
+      value: 
+      objectReference: {fileID: 623820805}
     - target: {fileID: 8849735085998360814, guid: 868b13a7be7adb148b89b9bcf56bb6a6,
         type: 3}
       propertyPath: m_Name
@@ -4045,6 +4055,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d5585d18e17682b468f5ee1b417e5df8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &716492603949598973 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6439548017835457048, guid: 868b13a7be7adb148b89b9bcf56bb6a6,
+    type: 3}
+  m_PrefabInstance: {fileID: 716492603949598966}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2477056e14af1294fbad88af51c01b2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1001 &4819415882130369158

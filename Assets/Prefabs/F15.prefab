@@ -1723,6 +1723,7 @@ GameObject:
   - component: {fileID: 3168297468136084144}
   - component: {fileID: 2515223684704408108}
   - component: {fileID: 3737572916587997159}
+  - component: {fileID: 6439548017835457048}
   m_Layer: 8
   m_Name: F15
   m_TagString: Untagged
@@ -2264,7 +2265,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8849735085998360814}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 523b6d4a45fda5a4990cea481944fdae, type: 3}
   m_Name: 
@@ -2302,6 +2303,106 @@ MonoBehaviour:
   reactionDelayMin: 0.75
   reactionDelayMax: 5
   reactionDelayDistance: 1000
+--- !u!114 &6439548017835457048
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8849735085998360814}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2477056e14af1294fbad88af51c01b2e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  plane: {fileID: 1030071069971577036}
+  state: 0
+  deadzone: 0.01
+  pitchHoldController:
+    proportionalGain: 0.2
+    integralGain: 0.05
+    derivativeGain: 0
+    outputMin: -1
+    outputMax: 1
+    integralSaturation: 1
+  climbRateController:
+    proportionalGain: 0.02
+    integralGain: 0.005
+    derivativeGain: 0.005
+    outputMin: -15
+    outputMax: 15
+    integralSaturation: 3000
+  altitudeHoldController:
+    proportionalGain: 10
+    integralGain: 0
+    derivativeGain: 0.1
+    outputMin: -6000
+    outputMax: 6000
+    integralSaturation: 0
+  speedHoldController:
+    proportionalGain: 0.1
+    integralGain: 0
+    derivativeGain: 0.1
+    outputMin: -1
+    outputMax: 1
+    integralSaturation: 0
+  turnBankController:
+    proportionalGain: 2
+    integralGain: 0
+    derivativeGain: 0.1
+    outputMin: -60
+    outputMax: 60
+    integralSaturation: 0
+  rollController:
+    proportionalGain: 0.05
+    integralGain: 0
+    derivativeGain: 0.001
+    outputMin: -1
+    outputMax: 1
+    integralSaturation: 0
+  yawController:
+    proportionalGain: 0.1
+    integralGain: 0.1
+    derivativeGain: 0
+    outputMin: -1
+    outputMax: 1
+    integralSaturation: 1
+  takeoffMode:
+    state: 0
+    rotationSpeedKts: 100
+    rotationAngle: 10
+    finishTakeoffClimbRateFtPerMin: 6000
+    finishTakeoffTargetFtAGL: 2500
+    finishTakeoffTargetSpeedKts: 175
+    runwayAltitude: 0
+  navigateMode:
+    pitchControlMode: 0
+    altitudeControlMode: 0
+    targetPitch: 0
+    targetSpeedKts: 0
+    targetAltitudeFt: 0
+    targetClimbRateFtPerMin: 0
+    targetHeading: 0
+  landingMode:
+    state: 0
+    runways:
+    - {fileID: 0}
+    selectedRunway: {fileID: 0}
+    touchdownPosition: {x: 0, y: 0, z: 0}
+    touchdownDirection: {x: 0, y: 0, z: 0}
+    idealGlideSlope: 3
+    captureMinDistance: 2000
+    captureMaxDistance: 6000
+    captureMaxAngle: 45
+    captureMinGlideSlope: 1
+    captureMaxGlideSlope: 12
+    abortApproachMinGlideSlope: 0
+    abortApproachMaxGlideSlope: 15
+    abortApproachMaxAngle: 15
+    abortTouchdownMaxAngle: 5
+    approachSpeed: 135
+    flareVerticalSpeed: 400
+    flareAltitude: 50
 --- !u!1001 &938316883078604183
 PrefabInstance:
   m_ObjectHideFlags: 0

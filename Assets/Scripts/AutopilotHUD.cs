@@ -45,7 +45,11 @@ public class AutopilotHUD : MonoBehaviour {
         autopilot.EnterTakeoffMode();
     }
 
-    public void OnStartTakeoff() {
-        autopilot.StartTakeoff();
+    public void OnSwitchNavigate() {
+        autopilot.EnterNavigateMode();
+    }
+
+    public void OnSwitchLanding() {
+        autopilot.EnterLandingMode();
     }
 }
