@@ -2319,7 +2319,7 @@ MonoBehaviour:
   state: 0
   deadzone: 0.01
   pitchHoldController:
-    proportionalGain: 0.2
+    proportionalGain: 0.1
     integralGain: 0.05
     derivativeGain: 0
     outputMin: -1
@@ -2367,6 +2367,20 @@ MonoBehaviour:
     outputMin: -1
     outputMax: 1
     integralSaturation: 1
+  glideSlopeController:
+    proportionalGain: 2
+    integralGain: 0
+    derivativeGain: 0.1
+    outputMin: -5
+    outputMax: 5
+    integralSaturation: 0
+  crossTrackController:
+    proportionalGain: 0.5
+    integralGain: 0
+    derivativeGain: 2
+    outputMin: -30
+    outputMax: 30
+    integralSaturation: 0
   takeoffMode:
     state: 0
     rotationSpeedKts: 100
@@ -2391,6 +2405,13 @@ MonoBehaviour:
     touchdownPosition: {x: 0, y: 0, z: 0}
     touchdownDirection: {x: 0, y: 0, z: 0}
     idealGlideSlope: 3
+    approachSpeedKts: 135
+    approachDistance: 2000
+    approachMaxCrossTrackError: 12.5
+    approachMinGlideSlope: 2
+    approachMaxGlideSlope: 6
+    flareVerticalSpeedFtPerMin: -200
+    flareAltitudeFt: 75
     captureMinDistance: 2000
     captureMaxDistance: 6000
     captureMaxAngle: 45
@@ -2399,10 +2420,8 @@ MonoBehaviour:
     abortApproachMinGlideSlope: 0
     abortApproachMaxGlideSlope: 15
     abortApproachMaxAngle: 15
+    abortApproachMaxCrossTrackError: 50
     abortTouchdownMaxAngle: 5
-    approachSpeed: 135
-    flareVerticalSpeed: 400
-    flareAltitude: 50
 --- !u!1001 &938316883078604183
 PrefabInstance:
   m_ObjectHideFlags: 0
