@@ -2319,6 +2319,7 @@ MonoBehaviour:
   state: 0
   deadzone: 0.01
   steeringPitchMaxHeadingError: 15
+  maxRoll: 60
   pitchHoldController:
     proportionalGain: 0.1
     integralGain: 0.05
@@ -2362,7 +2363,7 @@ MonoBehaviour:
     outputMax: 1
     integralSaturation: 0
   yawSlipController:
-    proportionalGain: 0.1
+    proportionalGain: 0.2
     integralGain: 0.1
     derivativeGain: 0
     outputMin: -1

@@ -21,6 +21,8 @@ public class AutopilotController : MonoBehaviour {
     [SerializeField]
     float steeringPitchMaxHeadingError;
     [SerializeField]
+    float maxRoll;
+    [SerializeField]
     PIDController pitchHoldController;
     [SerializeField]
     PIDController climbRateController;
@@ -301,9 +303,20 @@ public class AutopilotController : MonoBehaviour {
         return pitchInput;
     }
 
-    float CalculatePitchFlightPath(float dt, float flightPath, float targetFlightPath, float pitchRate) {
+    float CalculatePitchFlightPath(float dt, float flightPath, float targetFlightPath, float pitchRate, float headingError) {
+        // prevent pitch down when banking
+        if (Mathf.Abs(headingError) > steeringPitchMaxHeadingError && targetFlightPath < internalFlightPath) {
+            targetFlightPath = internalFlightPath;
+        }
+
+        internalTargetFlightPath = targetFlightPath;
+
+        // increase pitch strength when rolled
+        var effectiveRoll = Mathf.Clamp(plane.PitchYawRoll.z, -maxRoll, maxRoll);
+        var rollFactor = Mathf.Cos(effectiveRoll * Mathf.Deg2Rad);
+
         var pitchInput = pitchHoldController.Update(dt, flightPath, targetFlightPath, pitchRate);
-        return pitchInput;
+        return Mathf.Clamp(pitchInput / rollFactor, -1, 1);
     }
 
     float CalculateGlideSlopeTarget(float dt, float glidePath, float targetGlidePath, float pitchRate) {
@@ -430,7 +443,9 @@ public class AutopilotController : MonoBehaviour {
         var pitchRate = GetPitchRate(plane);
 
         if (mode == NavigateModeState.PitchControlMode.FlightPathMode) {
-            return CalculatePitchFlightPath(dt, internalFlightPath, navigateMode.targetPitch, pitchRate);
+            var headingError = internalHeading - navigateMode.targetHeading;
+            var pitchInput = CalculatePitchFlightPath(dt, internalFlightPath, navigateMode.targetPitch, pitchRate, headingError);
+            return pitchInput;
         } else {
             var pitch = plane.PitchYawRoll.x;
             var pitchInput = pitchHoldController.Update(dt, pitch, navigateMode.targetPitch, pitchRate);
@@ -692,15 +707,9 @@ public class AutopilotController : MonoBehaviour {
 
         var targetFlightPath = CalculateGlideSlopeTarget(dt, internalGlideSlope, landingMode.idealGlideSlope, pitchRate);
         var targetHeading = CalculateCrossTrackTarget(dt, internalLandingHeading, internalLandingCrossTrack, crossTrackVelocity);
-        var yawError = internalHeading - targetHeading;
+        var headingError = internalHeading - targetHeading;
 
-        if (Mathf.Abs(yawError) > steeringPitchMaxHeadingError && Mathf.Abs(targetFlightPath) > Mathf.Abs(internalFlightPath)) {
-            targetFlightPath = internalFlightPath;
-        }
-
-        internalTargetFlightPath = targetFlightPath;
-
-        var pitchInput = CalculatePitchFlightPath(dt, internalFlightPath, targetFlightPath, flightPathVelocity);
+        var pitchInput = CalculatePitchFlightPath(dt, internalFlightPath, targetFlightPath, flightPathVelocity, headingError);
         var rollInput = CalculateRollBank(dt, targetHeading);
         var yawInput = CalculateYawSlip(dt, 0, yawRate);
 
