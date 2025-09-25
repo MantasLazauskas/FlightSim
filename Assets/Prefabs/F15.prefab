@@ -2420,8 +2420,10 @@ MonoBehaviour:
     approachMinGlideSlope: 2
     approachMaxGlideSlope: 8
     approachMaxAngle: 5
-    flareVerticalSpeedFtPerMin: -300
-    flareAltitudeFt: 75
+    flareDescentStartFtPerMin: -800
+    flareDescentEndFtPerMin: -200
+    flareStartAltitudeFt: 75
+    flareEndAltitudeFt: 25
     captureMinDistance: 2000
     captureMaxDistance: 6000
     captureMaxAngle: 45

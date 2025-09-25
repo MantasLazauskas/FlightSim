@@ -137,8 +137,10 @@ public class AutopilotController : MonoBehaviour {
         public float approachMinGlideSlope;
         public float approachMaxGlideSlope;
         public float approachMaxAngle;
-        public float flareVerticalSpeedFtPerMin;
-        public float flareAltitudeFt;
+        public float flareDescentStartFtPerMin;
+        public float flareDescentEndFtPerMin;
+        public float flareStartAltitudeFt;
+        public float flareEndAltitudeFt;
 
         public float captureMinDistance;
         public float captureMaxDistance;
@@ -731,7 +733,7 @@ public class AutopilotController : MonoBehaviour {
         }
 
         float altitude = internalLandingAltitude * Units.metersToFeet;
-        bool altitudeCheck = altitude <= landingMode.flareAltitudeFt;
+        bool altitudeCheck = altitude <= landingMode.flareStartAltitudeFt;
         bool thresholdCheck = internalLandingDistance < 0;
 
         if (CheckLandingAbort()) {
@@ -749,7 +751,11 @@ public class AutopilotController : MonoBehaviour {
 
         var targetHeading = CalculateCrossTrackTarget(dt, internalLandingHeading, internalLandingCrossTrack, crossTrackVelocity);
 
-        var pitchInput = CalculatePitchClimbRate(dt, landingMode.flareVerticalSpeedFtPerMin);
+        float altitude = internalLandingAltitude * Units.metersToFeet;
+        float flareT = Mathf.InverseLerp(landingMode.flareStartAltitudeFt, landingMode.flareEndAltitudeFt, altitude);
+        float descentRate = Mathf.Lerp(landingMode.flareDescentStartFtPerMin, landingMode.flareDescentEndFtPerMin, flareT);
+
+        var pitchInput = CalculatePitchClimbRate(dt, descentRate);
         var rollInput = CalculateRollBank(dt, targetHeading);
         var yawInput = CalculateYawHeading(dt, internalHeading, internalLandingHeading, yawRate);
 
