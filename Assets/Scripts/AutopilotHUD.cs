@@ -22,22 +22,7 @@ public class AutopilotHUD : MonoBehaviour {
 
     void Update() {
         builder.Clear();
-        builder.AppendLine(string.Format("Mode: {0}", autopilot.State));
-
-        float pitch = plane.PitchYawRoll.x;
-        builder.AppendLine(string.Format("Pitch: {0:N2}", pitch));
-
-        float pitchRate = -plane.LocalAngularVelocity.x * Mathf.Rad2Deg;
-        builder.AppendLine(string.Format("Pitch rate: {0:N2}", pitchRate));
-
-        float agl = plane.RadarAltimeter * Units.metersToFeet;
-        builder.AppendLine(string.Format("AGL: {0:N0}", agl));
-
-        float climbRate = plane.Rigidbody.velocity.y * Units.metersToFeet * 60;
-        builder.AppendLine(string.Format("Climb rate: {0}", (int)Mathf.Round(climbRate)));
-
         autopilot.WriteDebugString(builder);
-
         infoText.text = builder.ToString();
     }
 

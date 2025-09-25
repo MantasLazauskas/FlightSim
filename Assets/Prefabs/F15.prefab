@@ -2324,7 +2324,7 @@ MonoBehaviour:
     derivativeGain: 0
     outputMin: -1
     outputMax: 1
-    integralSaturation: 1
+    integralSaturation: 2.5
   climbRateController:
     proportionalGain: 0.02
     integralGain: 0.005
@@ -2366,14 +2366,14 @@ MonoBehaviour:
     derivativeGain: 0
     outputMin: -1
     outputMax: 1
-    integralSaturation: 1
+    integralSaturation: 2.5
   glideSlopeController:
     proportionalGain: 2
-    integralGain: 0
+    integralGain: 1
     derivativeGain: 0.1
-    outputMin: -5
-    outputMax: 5
-    integralSaturation: 0
+    outputMin: -10
+    outputMax: 10
+    integralSaturation: 1
   crossTrackController:
     proportionalGain: 0.5
     integralGain: 0
@@ -2385,9 +2385,10 @@ MonoBehaviour:
     state: 0
     rotationSpeedKts: 100
     rotationAngle: 10
+    takeoffTargetSpeedKts: 250
     finishTakeoffClimbRateFtPerMin: 6000
-    finishTakeoffTargetFtAGL: 2500
-    finishTakeoffTargetSpeedKts: 175
+    finishTakeoffMinFtAGL: 2500
+    finishTakeoffMinSpeedKts: 175
     runwayAltitude: 0
   navigateMode:
     pitchControlMode: 0
@@ -2404,22 +2405,23 @@ MonoBehaviour:
     selectedRunway: {fileID: 0}
     touchdownPosition: {x: 0, y: 0, z: 0}
     touchdownDirection: {x: 0, y: 0, z: 0}
-    idealGlideSlope: 3
+    idealGlideSlope: 5
     approachSpeedKts: 135
-    approachDistance: 2000
-    approachMaxCrossTrackError: 12.5
+    approachDistance: 1500
+    approachMaxCrossTrackError: 25
     approachMinGlideSlope: 2
-    approachMaxGlideSlope: 6
-    flareVerticalSpeedFtPerMin: -200
+    approachMaxGlideSlope: 8
+    approachMaxAngle: 5
+    flareVerticalSpeedFtPerMin: -300
     flareAltitudeFt: 75
     captureMinDistance: 2000
     captureMaxDistance: 6000
     captureMaxAngle: 45
     captureMinGlideSlope: 1
-    captureMaxGlideSlope: 12
-    abortApproachMinGlideSlope: 0
-    abortApproachMaxGlideSlope: 15
-    abortApproachMaxAngle: 15
+    captureMaxGlideSlope: 15
+    abortApproachMinGlideSlope: 1
+    abortApproachMaxGlideSlope: 10
+    abortApproachMaxAngle: 10
     abortApproachMaxCrossTrackError: 50
     abortTouchdownMaxAngle: 5
 --- !u!1001 &938316883078604183

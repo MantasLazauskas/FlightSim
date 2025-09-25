@@ -53,6 +53,7 @@ public class AutopilotController : MonoBehaviour {
     float internalLandingAltitude;
     float internalLandingHeading;
     float internalGlideSlope;
+    float internalLandingAngle;
 
     float? lastLandingCrossTrack;
 
@@ -68,12 +69,14 @@ public class AutopilotController : MonoBehaviour {
         [Tooltip("Knots")]
         public float rotationSpeedKts;
         public float rotationAngle;
+        [Tooltip("Knots")]
+        public float takeoffTargetSpeedKts;
         [Tooltip("Feet/min")]
         public float finishTakeoffClimbRateFtPerMin;
         [Tooltip("Feet Above Ground Level (runway)")]
-        public float finishTakeoffTargetFtAGL;
+        public float finishTakeoffMinFtAGL;
         [Tooltip("Knots")]
-        public float finishTakeoffTargetSpeedKts;
+        public float finishTakeoffMinSpeedKts;
 
         public float runwayAltitude;
     }
@@ -124,6 +127,7 @@ public class AutopilotController : MonoBehaviour {
         public float approachMaxCrossTrackError;
         public float approachMinGlideSlope;
         public float approachMaxGlideSlope;
+        public float approachMaxAngle;
         public float flareVerticalSpeedFtPerMin;
         public float flareAltitudeFt;
 
@@ -182,6 +186,19 @@ public class AutopilotController : MonoBehaviour {
     }
 
     public void WriteDebugString(StringBuilder builder) {
+        builder.AppendLine(string.Format("Mode: {0}", state));
+
+        float pitch = plane.PitchYawRoll.x;
+        builder.AppendLine(string.Format("Pitch: {0:N1}", pitch));
+
+        float pitchRate = -plane.LocalAngularVelocity.x * Mathf.Rad2Deg;
+        builder.AppendLine(string.Format("Pitch rate: {0:N1}", pitchRate));
+
+        float agl = plane.RadarAltimeter * Units.metersToFeet;
+        builder.AppendLine(string.Format("AGL: {0:N0} m", agl));
+
+        float climbRate = plane.Rigidbody.velocity.y * Units.metersToFeet * 60;
+        builder.AppendLine(string.Format("Climb rate: {0} fpm", (int)Mathf.Round(climbRate)));
         builder.AppendLine(string.Format("Heading: {0:N0}", internalHeading));
 
         if (state == AutopilotState.Navigate) {
@@ -193,10 +210,11 @@ public class AutopilotController : MonoBehaviour {
             }
         } else if (state == AutopilotState.Landing) {
             builder.AppendLine(string.Format("Landing: {0}", landingMode.state));
-            builder.AppendLine(string.Format("  Distance: {0:N0}", internalLandingDistance));
-            builder.AppendLine(string.Format("  Cross track error: {0:N0}", internalLandingCrossTrack));
-            builder.AppendLine(string.Format("  Altitude: {0:N0}", internalLandingAltitude));
-            builder.AppendLine(string.Format("  Glide slope: {0:N0}", internalGlideSlope));
+            builder.AppendLine(string.Format("  Distance: {0:N0} m", internalLandingDistance));
+            builder.AppendLine(string.Format("  Cross track error: {0:N0} m", internalLandingCrossTrack));
+            builder.AppendLine(string.Format("  Altitude: {0:N0} m", internalLandingAltitude));
+            builder.AppendLine(string.Format("  Glide slope: {0:N1}", internalGlideSlope));
+            builder.AppendLine(string.Format("  Angle: {0:N1}", internalLandingAngle));
         }
     }
 
@@ -289,6 +307,9 @@ public class AutopilotController : MonoBehaviour {
 
     public void EnterTakeoffMode() {
         if (state == AutopilotState.Takeoff) return;
+        if (state == AutopilotState.Landing && landingMode.state != LandingModeState.LandingState.Touchdown) {
+            AbortLandingToTakeoff();
+        }
         if (!plane.Grounded) return;
 
         state = AutopilotState.Takeoff;
@@ -302,6 +323,10 @@ public class AutopilotController : MonoBehaviour {
         state = AutopilotState.Navigate;
 
         ResetNavigation();
+
+        if (plane.FlapsDeployed) {
+            plane.ToggleFlaps();
+        }
     }
 
     public void EnterLandingMode() {
@@ -442,6 +467,8 @@ public class AutopilotController : MonoBehaviour {
     }
 
     void HandleFinishTakeoff(float dt) {
+        SetThrottleSpeedHold(dt, takeoffMode.takeoffTargetSpeedKts);
+
         var roll = plane.PitchYawRoll.z;
         var rollRate = GetRollRate(plane);
 
@@ -452,10 +479,10 @@ public class AutopilotController : MonoBehaviour {
         SetControlInput(plane, steering);
 
         var alt = plane.Rigidbody.position.y * Units.metersToFeet;
-        var targetAlt = takeoffMode.finishTakeoffTargetFtAGL + takeoffMode.runwayAltitude;
+        var targetAlt = takeoffMode.finishTakeoffMinFtAGL + takeoffMode.runwayAltitude;
         var speed = plane.LocalVelocity.z * Units.metersToKnots;
 
-        if (alt >= targetAlt && speed >= takeoffMode.finishTakeoffTargetSpeedKts) {
+        if (alt >= targetAlt && speed >= takeoffMode.finishTakeoffMinSpeedKts) {
             EnterNavigateMode();
         }
     }
@@ -600,6 +627,12 @@ public class AutopilotController : MonoBehaviour {
 
         var altitude = -error.y;
         internalLandingAltitude = altitude;
+
+        var planeVelocity2D = planeVelocityDirection;
+        planeVelocity2D.y = 0;
+        planeVelocity2D = planeVelocity2D.normalized;
+
+        internalLandingAngle = Vector3.Angle(landingMode.touchdownDirection, planeVelocity2D);
     }
 
     void AbortLandingToTakeoff() {
@@ -609,13 +642,12 @@ public class AutopilotController : MonoBehaviour {
     }
 
     bool CheckLandingAbort() {
-        bool crossTrackAbortCheck = internalLandingCrossTrack > landingMode.abortApproachMaxCrossTrackError;
-        bool glideSlopeAbortCheck = internalGlideSlope < landingMode.abortApproachMinGlideSlope && internalGlideSlope > landingMode.abortApproachMaxGlideSlope;
-        bool distanceAbortCheck = internalLandingDistance < landingMode.approachDistance;
+        bool crossTrackCheck = Mathf.Abs(internalLandingCrossTrack) > landingMode.abortApproachMaxCrossTrackError;
+        bool glideSlopeCheck = internalGlideSlope < landingMode.abortApproachMinGlideSlope && internalGlideSlope > landingMode.abortApproachMaxGlideSlope;
+        bool distanceCheck = internalLandingDistance < landingMode.approachDistance;
+        bool angleCheck = internalLandingAngle > landingMode.abortApproachMaxAngle;
 
-        if ((crossTrackAbortCheck || glideSlopeAbortCheck) && distanceAbortCheck) {
-            AbortLandingToTakeoff();
-
+        if ((crossTrackCheck || glideSlopeCheck || angleCheck) && distanceCheck) {
             return true;
         }
 
@@ -643,10 +675,11 @@ public class AutopilotController : MonoBehaviour {
         SetThrottleSpeedHold(dt, landingMode.approachSpeedKts);
         SteerLandingApproach(dt);
 
-        bool crossTrackCheck = internalLandingCrossTrack < landingMode.approachMaxCrossTrackError;
+        bool crossTrackCheck = Mathf.Abs(internalLandingCrossTrack) < landingMode.approachMaxCrossTrackError;
         bool glideSlopeCheck = internalGlideSlope > landingMode.approachMinGlideSlope && internalGlideSlope < landingMode.approachMaxGlideSlope;
+        bool angleCheck = internalLandingAngle < landingMode.approachMaxAngle;
 
-        if (crossTrackCheck && glideSlopeCheck) {
+        if (crossTrackCheck && glideSlopeCheck && angleCheck) {
             landingMode.state = LandingModeState.LandingState.Approach;
         } else if (internalLandingDistance < landingMode.approachDistance) {
             AbortLandingToTakeoff();
@@ -667,6 +700,7 @@ public class AutopilotController : MonoBehaviour {
         bool thresholdCheck = internalLandingDistance < 0;
 
         if (CheckLandingAbort()) {
+            AbortLandingToTakeoff();
             return;
         } else if (altitudeCheck || thresholdCheck) {
             landingMode.state = LandingModeState.LandingState.Flare;
@@ -691,6 +725,7 @@ public class AutopilotController : MonoBehaviour {
         SetControlInput(plane, steering);
 
         if (CheckLandingAbort()) {
+            AbortLandingToTakeoff();
             return;
         } else if (plane.Grounded) {
             landingMode.state = LandingModeState.LandingState.Touchdown;
