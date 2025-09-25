@@ -2318,10 +2318,11 @@ MonoBehaviour:
   plane: {fileID: 1030071069971577036}
   state: 0
   deadzone: 0.01
+  steeringPitchMaxHeadingError: 15
   pitchHoldController:
     proportionalGain: 0.1
     integralGain: 0.05
-    derivativeGain: 0
+    derivativeGain: 0.01
     outputMin: -1
     outputMax: 1
     integralSaturation: 2.5
@@ -2360,16 +2361,23 @@ MonoBehaviour:
     outputMin: -1
     outputMax: 1
     integralSaturation: 0
-  yawController:
+  yawSlipController:
     proportionalGain: 0.1
     integralGain: 0.1
     derivativeGain: 0
     outputMin: -1
     outputMax: 1
     integralSaturation: 2.5
+  yawHeadingController:
+    proportionalGain: 0.1
+    integralGain: 0
+    derivativeGain: 0
+    outputMin: -1
+    outputMax: 1
+    integralSaturation: 0
   glideSlopeController:
-    proportionalGain: 2
-    integralGain: 1
+    proportionalGain: 2.5
+    integralGain: 0.5
     derivativeGain: 0.1
     outputMin: -10
     outputMax: 10
