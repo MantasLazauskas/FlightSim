@@ -70,7 +70,7 @@ public class Plane : MonoBehaviour {
     [SerializeField]
     List<Collider> landingGear;
     [SerializeField]
-    PhysicMaterial landingGearBrakesMaterial;
+    PhysicsMaterial landingGearBrakesMaterial;
     [SerializeField]
     List<GameObject> graphics;
     [SerializeField]
@@ -117,7 +117,7 @@ public class Plane : MonoBehaviour {
     Vector3 controlInput;
 
     Vector3 lastVelocity;
-    PhysicMaterial landingGearDefaultMaterial;
+    PhysicsMaterial landingGearDefaultMaterial;
 
     int missileIndex;
     List<float> missileReloadTimers;
@@ -211,7 +211,7 @@ public class Plane : MonoBehaviour {
 
         missileLockDirection = Vector3.forward;
 
-        Rigidbody.velocity = Rigidbody.rotation * new Vector3(0, 0, initialSpeed);
+        Rigidbody.linearVelocity = Rigidbody.rotation * new Vector3(0, 0, initialSpeed);
     }
 
     public void SetThrottleInput(float input) {
@@ -296,7 +296,7 @@ public class Plane : MonoBehaviour {
 
     void CalculateState(float dt) {
         var invRotation = Quaternion.Inverse(Rigidbody.rotation);
-        Velocity = Rigidbody.velocity;
+        Velocity = Rigidbody.linearVelocity;
         LocalVelocity = invRotation * Velocity;  //transform world velocity into local space
         LocalAngularVelocity = invRotation * Rigidbody.angularVelocity;  //transform into local space
 
@@ -549,7 +549,7 @@ public class Plane : MonoBehaviour {
         } else {
             //align with velocity
             Vector3 up = Rigidbody.rotation * Vector3.up;
-            Vector3 forward = Rigidbody.velocity.normalized;
+            Vector3 forward = Rigidbody.linearVelocity.normalized;
             Rigidbody.rotation = Quaternion.LookRotation(forward, up);
         }
 

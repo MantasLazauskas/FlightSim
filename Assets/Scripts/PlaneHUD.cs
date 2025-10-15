@@ -148,7 +148,7 @@ public class PlaneHUD : MonoBehaviour {
         var velocity = planeTransform.forward;
 
         if (plane.LocalVelocity.sqrMagnitude > 1) {
-            velocity = plane.Rigidbody.velocity;
+            velocity = plane.Rigidbody.linearVelocity;
         }
 
         var hudPos = TransformToHUDSpace(cameraTransform.position + velocity);
@@ -258,7 +258,7 @@ public class PlaneHUD : MonoBehaviour {
         }
 
         //update target lead
-        var leadPos = Utilities.FirstOrderIntercept(plane.Rigidbody.position, plane.Rigidbody.velocity, bulletSpeed, plane.Target.Position, plane.Target.Velocity);
+        var leadPos = Utilities.FirstOrderIntercept(plane.Rigidbody.position, plane.Rigidbody.linearVelocity, bulletSpeed, plane.Target.Position, plane.Target.Velocity);
         var reticlePos = TransformToHUDSpace(leadPos);
 
         if (reticlePos.z > 0 && targetDistance <= cannonRange) {
